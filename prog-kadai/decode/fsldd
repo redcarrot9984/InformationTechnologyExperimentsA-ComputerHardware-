@@ -1,0 +1,50 @@
+/* (test_p32DecodeUnit.fsl) */
+
+module test_p32DecodeUnit extends Simulator {
+  reg count: Bit(16)
+  val decodeUnit = new p32DecodeUnit
+  mem [Bit(128)] pat(1000)
+  initial {
+    _readmemh("test_p32DecodeUnit.pat", pat)
+  }
+  always {
+    count := count + 1
+    if (2 <= count && count <= 1001) par {
+      val i = count - 2 //
+      val p = pat(i)       // xxxxxxxx_xxxxxxxx_xxxxxxxx_xxxxxxxx
+      //val p = 0x0400ffff_11111111_22222222_33333333
+      val   inst = p(127, 96) // (32-bits)
+      val a_data = p( 95, 64) // (32-bits)
+      val b_data = p( 63, 32) // (32-bits)
+      val  pc_in = p( 31,  0) // (32-bits)
+      decodeUnit.decode(inst, a_data, b_data, pc_in)
+      val a_out     = decodeUnit.a_out
+      val b_out     = decodeUnit.b_out
+      val dest_out  = decodeUnit.dest_out
+      val shamt_out = decodeUnit.shamt_out
+      val mdr_out   = decodeUnit.mdr_out
+      val pc_out    = decodeUnit.pc_out
+      val epc_out   = decodeUnit.epc_out
+      val cause_out = decodeUnit.cause_out
+      val funct_out = decodeUnit.funct_out
+      val update_pc1 = if (decodeUnit.update_pc.isRunning) 0b1 else 0b0
+      val update_mdr1 = if (decodeUnit.update_mdr.isRunning) 0b1 else 0b0
+      val set_epc1 = if (decodeUnit.set_epc.isRunning) 0b1 else 0b0
+      val set_cause1 = if (decodeUnit.set_cause.isRunning) 0b1 else 0b0
+      val exception1 = if (decodeUnit.exception.isRunning) 0b1 else 0b0
+      val undefined_inst1 = if (decodeUnit.undefined_inst.isRunning) 0b1 else 0b0
+
+      _display("%d: %x %x %x %x - %x %x %d %d %x  %b:%x %b:%x %b:%x %b:%x %b %b",
+	       i, inst, a_data, b_data, pc_in,
+	       a_out, b_out, dest_out, shamt_out, funct_out, 
+	       update_pc1, pc_out,
+	       update_mdr1, mdr_out,
+	       set_epc1, epc_out,
+	       set_cause1, cause_out,
+	       exception1, undefined_inst1)
+    }
+    if (count == 1001) _finish("%d: bye", count)
+  }
+}
+/* End of file (test_p32DecodeUnit.fsl) */
+
