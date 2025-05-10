@@ -1,0 +1,25 @@
+module test_div32 extends Simulator {
+  reg count: Bit(16)
+  reg start_count: Bit(16)
+  val d0 = new div32_v2
+
+  always {
+    count := count + 1
+    if (count == 400) _finish("%d: bye.", count)
+    if (count == 66) test(7.toBit(32), 2.toBit(32))
+    if (count == 132) test(13.toBit(32), 3.toBit(32))
+    if (count == 198) test(15.toBit(32), 3.toBit(32))
+    if (count == 264) test(12.toBit(32), 4.toBit(32))
+    if (count == 330) test(5.toBit(32), 8.toBit(32))
+  }
+  private def test(a: Bit(32), b: Bit(32)): Unit = {
+    _display("%d: d0.div(%b, %b)  %d / %d", count, a, b, a, b)
+    d0.div(a, b)
+    start_count := count
+  }
+  private def d0.out_en(q: Bit(32), r: Bit(32)): Unit = {
+    val lat = count - start_count
+    _display("%d: q = %x, r = %x, latency = %d", count, q, r, lat)
+  }
+}
+/* End of file (test_div4.fsl) */

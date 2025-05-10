@@ -1,0 +1,56 @@
+/* (add32.fsl) */
+module add4{
+ input a: Bit(4)
+ input b: Bit(4)
+ input ci: Bit(1) // carry-in
+ output out: Bit(4) // sum output
+ output co: Bit(1) // carry-out
+ output ov: Bit(1) // overflow
+ 
+ def addf(a, b, ci): Unit = {
+ val t1 = 0b0 ++ a
+ val t2 = 0b0 ++ b
+ val t3 = t1 + t2 + ci.toBit(5)
+ out = t3(3, 0)
+ co = t3(4)
+ ov = (~a.msb & ~b.msb & out.msb) | (a.msb & b.msb & ~out.msb)
+ } // def add
+ } // module add4
+ /* End of file (add4.fsl) */
+ 
+ 
+ 
+module add32 {
+   input     a: Bit(32)
+   input     b: Bit(32)
+   input   cin: Bit(1)
+   output  sum: Bit(32)
+   output cout: Bit(1)
+   output ov: Bit(1)
+   val a0 = new add4
+   val a1 = new add4
+   val a2 = new add4
+   val a3 = new add4
+   val a4 = new add4
+   val a5 = new add4
+   val a6 = new add4
+   val a7 = new add4
+   
+   def add(a, b, cin): Unit = {
+   a0.addf(a(3,0),b(3,0),cin)
+   a1.addf(a(7,4),b(7,4),a0.co)  
+   a2.addf(a(11,8),b(11,8),a1.co)
+   a3.addf(a(15,12),b(15,12),a2.co)
+   a4.addf(a(19,16),b(19,16),a3.co)
+   a5.addf(a(23,20),b(23,20),a4.co)
+   a6.addf(a(27,24),b(27,24),a5.co)
+   a7.addf(a(31,28),b(31,28),a6.co)
+   sum = a7.out ++ a6.out ++ a5.out ++ a4.out ++ a3.out ++ a2.out ++ a1.out ++ a0.out
+   cout = a7.co
+   val t1 = a7.out
+   ov = (~a.msb & ~b.msb & t1.msb) | (a.msb & b.msb & ~t1.msb)
+ 
+   } // add
+} // module add32
+ 
+/* End of file (add32.fsl) */

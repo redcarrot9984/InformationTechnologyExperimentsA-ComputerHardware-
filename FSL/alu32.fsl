@@ -1,0 +1,48 @@
+/* (alu32.fsl) */
+ 
+module alu32 {
+  input         a: Bit(32)
+  input         b: Bit(32)
+  output      out: Bit(32)
+  output overflow: Bit(1)
+  output     zero: Bit(1)
+  output    carry: Bit(1)
+val y0 = new add32
+  def op_add(a, b): Unit = {
+  
+    y0.add(a,b,0b0)
+	out = y0.sum
+	overflow = y0.ov
+	 zero = if (out == Bit(32).zero) 0b1 else 0b0
+  }
+  def op_sub(a, b): Unit = {
+    
+    y0.add(a,~b,0b1)
+        out = y0.sum 
+        overflow = y0.ov
+         zero = if (out == Bit(32).zero) 0b1 else 0b0
+         carry = y0.cout
+  }
+  def op_and(a, b): Unit = {
+   out = a & b
+   overflow = 0b0
+  zero = if (out == Bit(32).zero) 0b1 else 0b0
+  }
+  def op_or(a, b): Unit = {
+    out = a | b 
+    overflow = 0b0
+     zero = if (out == Bit(32).zero) 0b1 else 0b0
+  }
+  def op_xor(a, b): Unit = {
+    out = a ^ b
+    overflow = 0b0
+     zero = if (out == Bit(32).zero) 0b1 else 0b0
+  }
+  def op_nor(a, b): Unit = {
+    out = ~(a | b)
+    overflow = 0b0
+     zero = if (out == Bit(32).zero) 0b1 else 0b0
+  }
+} // module alu32
+ 
+/* End of file (alu32.fsl) */

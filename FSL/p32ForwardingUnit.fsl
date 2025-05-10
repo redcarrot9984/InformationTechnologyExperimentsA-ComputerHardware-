@@ -1,0 +1,51 @@
+/*
+ * Data forwarding unit for p32p1 processor
+ * (p32ForwardingUnit.fsl)
+ *
+ */
+
+module p32ForwardingUnit {
+  input   addr1: Bit(5)
+  input     in1: Bit(32)
+  input   addr2: Bit(5)
+  input     in2: Bit(32)
+
+  input ex_addr: Bit(5)
+  input ex_data: Bit(32)
+  input me_addr: Bit(5)
+  input me_data: Bit(32)
+  input wb_addr: Bit(5)
+  input wb_data: Bit(32)
+
+  output def load_hazard(): Unit
+
+  def ex(ex_addr, ex_data): Unit = {}
+  def me(me_addr, me_data): Unit = {}
+  def wb(wb_addr, wb_data): Unit = {}
+  def ex_load(): Unit = {}
+
+  private inline def forwarding(addr: Bit(5), in: Bit(32)): Bit(32) = {
+    val fromEX  = (ex.isRunning && (addr == ex_addr/* TODO 1 */   ))
+    val fromMEM = (me.isRunning && (addr == me_addr/* TODO 2 */   ))
+    val fromWB  = (wb.isRunning && (addr == wb_addr/* TODO 3 */   ))
+
+    if (fromEX && ex_load.isRunning) load_hazard()
+
+    if (addr == 0b00000) Bit(32).zero // no forwarding
+    else if (fromEX)     ex_data/* TODO 4 */ // forwarding from EX
+    else if (fromMEM)    me_data /* TODO 5 */ // forwarding from MEM
+    else if (fromWB)     wb_data /* TODO 6 */ // forwarding from WB
+    else in /* TODO 7 */                 // no data forwarding
+  }
+
+  def set1(addr1, in1): Bit(32) = {
+    forwarding(addr1, in1)
+  }
+
+  def set2(addr2, in2): Bit(32) = {
+    forwarding(addr2, in2)
+  }
+
+} // module p32ForwardingUnit
+
+/* End of file (p32ForwardingUnit.fsl) */

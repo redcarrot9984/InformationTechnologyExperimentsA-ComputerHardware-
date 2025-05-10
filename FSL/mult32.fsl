@@ -1,0 +1,43 @@
+/* (mult32.fsl) */
+
+module mult32 {
+  input    a: Bit(32)//被乗数
+  input    b: Bit(32)//乗数
+  output out: Bit(64)
+
+  output def en(out): Unit
+
+  reg count:Bit(6)
+  reg hijousu:Bit(64)
+  reg jousu:Bit(32)
+  reg value:Bit(64)
+  
+  def mult(a, b): Unit = {
+      hijousu := Bit(32).zero ++ a
+      jousu := b
+      value := Bit(64).zero
+      count := Bit(6).zero
+      generate stage1
+  }
+
+  stage stage1 {
+        state state1 par{
+              if (jousu(0) == 0b1) {
+                 value := value + hijousu
+              }
+              hijousu := hijousu << 1
+              jousu := jousu >>> 1
+              count := count + 1
+              if (count == 32){
+                 en(value)
+                 goto state1
+                 finish
+              }else {
+                    goto state1
+              }   
+        }
+  }
+
+} // module mult32
+
+/* End of file (mult32.fsl) */

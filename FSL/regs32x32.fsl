@@ -1,0 +1,67 @@
+/* (regs32x32.fsl) */
+
+module regs32x32 {
+  input      in: Bit(32)
+  input in_addr: Bit(5)
+  input  a_addr: Bit(5)
+  input  b_addr: Bit(5)
+  output      a: Bit(32)
+  output      b: Bit(32)
+val v1 = new regs32x8
+val v2 = new regs32x8
+val v3 = new regs32x8
+val v4 = new regs32x8
+
+
+  def read_a(a_addr): Unit = {
+  
+  v1.read_a(a_addr(2,0))
+ // v2.read_a(a_addr(2,0))
+  v3.read_a(a_addr(2,0))
+  v4.read_a(a_addr(2,0))
+  if (a_addr(4,3) == 0b00) a = v1.a
+  if (a_addr(4,3) == 0b01)  par {
+  v2.read_a(a_addr(2,0))
+  a = v2.a 
+  }
+  if (a_addr(4,3) == 0b10) a = v3.a
+  if (a_addr(4,3) == 0b11) a = v4.a
+  }
+
+  def read_b(b_addr): Unit = {
+  
+  v1.read_b(b_addr(2,0))
+   v2.read_b(b_addr(2,0))
+    v3.read_b(b_addr(2,0))
+     v4.read_b(b_addr(2,0))
+ if (b_addr(4,3) == 0b00) b = v1.b
+  if (b_addr(4,3) == 0b01) b = v2.b
+  if (b_addr(4,3) == 0b10) b = v3.b
+  if (b_addr(4,3) == 0b11) b = v4.b
+
+  }
+
+  def write(in_addr, in): Unit = {
+  
+if (in_addr(4,3) == 0b00) par { 
+	if(in_addr(2,0) == 0b000) v1.write(in_addr(2,0),Bit(32).zero)
+	else v1.write(in_addr(2,0),in)
+	}
+
+ 
+if (in_addr(4,3) == 0b01) v2.write(in_addr(2,0),in)
+if (in_addr(4,3) == 0b10) par {  v3.write(in_addr(2,0),in) }
+if (in_addr(4,3) == 0b11) par {  v4.write(in_addr(2,0),in) }
+
+  }
+
+  def clear(): Unit = {
+  v1.clear()
+   v2.clear()
+ v3.clear()
+ v4.clear()
+
+  }
+}
+
+/* End of file (regs32x32.fsl) */

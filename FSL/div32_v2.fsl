@@ -1,0 +1,37 @@
+module div32_v2 {
+    input   a: Bit(32) //入力
+    input   b: Bit(32) //入力
+    output  q: Bit(32) //商
+    output  r: Bit(32) //剰余
+    output def out_en(q, r): Unit//出力関数
+
+    def div(a, b): Unit = par{
+        generate DIV(Bit(31).zero ++ a ++ 0b0, b, 0b1 ++ Bit(31).zero); //DIVへの引数
+    } //ここまで1マシンサイクル
+
+
+    stage DIV(a0: Bit(64), b0: Bit(32), stat: Bit(32)) {
+    
+        state st0 par {
+            val t1 = a0(63, 32) - b0
+            val t2 = if (t1.msb == 0b1) a0(63, 1) ++ 0b0 //a0(63, 32) > b0
+                     else t1(31, 0) ++ a0(31, 1) ++ 0b1 //a0(63, 32) < b0 
+                     /*引き算の結果を上位ビットに書き換えて，下位ビットを1bitシフト*/
+            stat := 0b0 ++ stat(31, 1) // stat >> 1==loopcounte
+            /*ここからループ終了条件*/
+            if (stat(0) == 0b1) par {
+	        a0 := t2
+	        goto st1 //ループ終了
+            } else par {
+	        a0 := t2(62, 0) ++ 0b0 // shift left 
+            }
+        }//ここまで1マシンサイクル並列処理
+
+       state st1 par {
+            out_en(a0(31, 0), a0(63, 32)) // output result
+            /*これが有効なのは(32n+1)サイクル毎*/
+            goto st0
+            finish
+        }      
+    }
+}
